@@ -55,7 +55,7 @@ func (p *processor) ProcessBatch(b targets.Batch, doLoad bool) (uint64, uint64) 
 			}
 		}
 	}
-	batches.m = map[string][]*insertData{}
+	batches.m = map[string][]*InsertData{}
 	batches.cnt = 0
 
 	return metricCnt, uint64(rowCnt)
@@ -79,7 +79,7 @@ type syncCSI struct {
 var globalSyncCSI = newSyncCSI()
 
 // Process part of incoming data - insert into tables
-func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
+func (p *processor) processCSI(tableName string, rows []*InsertData) uint64 {
 	tagRows := make([][]string, 0, len(rows))
 	dataRows := make([][]interface{}, 0, len(rows))
 	ret := uint64(0)

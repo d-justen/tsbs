@@ -36,9 +36,9 @@ func TestHypertableArr(t *testing.T) {
 		t.Errorf("tableArr not initialized with count 0")
 	}
 	p := data.LoadedPoint{
-		Data: &point{
-			table: "table1",
-			row: &insertData{
+		Data: &Point{
+			Table: "table1",
+			Row: &InsertData{
 				tags:   "t1,t2",
 				fields: "0,f1,f2",
 			},
@@ -49,9 +49,9 @@ func TestHypertableArr(t *testing.T) {
 		t.Errorf("tableArr count is not 1 after first append")
 	}
 	p = data.LoadedPoint{
-		Data: &point{
-			table: "table2",
-			row: &insertData{
+		Data: &Point{
+			Table: "table2",
+			Row: &InsertData{
 				tags:   "t3,t4",
 				fields: "1,f3,f4",
 			},
@@ -95,7 +95,7 @@ func TestNextItem(t *testing.T) {
 	}
 	for _, c := range cases {
 		br := bufio.NewReader(bytes.NewReader([]byte(c.input)))
-		dataSource := &fileDataSource{scanner: bufio.NewScanner(br)}
+		dataSource := &FileDataSource{Scanner: bufio.NewScanner(br)}
 		if c.shouldFatal {
 			fmt.Println(c.desc)
 			isCalled := false
@@ -109,15 +109,15 @@ func TestNextItem(t *testing.T) {
 			}
 		} else {
 			p := dataSource.NextItem()
-			data := p.Data.(*point)
-			if data.table != c.wantPrefix {
-				t.Errorf("%s: incorrect prefix: got %s want %s", c.desc, data.table, c.wantPrefix)
+			data := p.Data.(*Point)
+			if data.Table != c.wantPrefix {
+				t.Errorf("%s: incorrect prefix: got %s want %s", c.desc, data.Table, c.wantPrefix)
 			}
-			if data.row.fields != c.wantFields {
-				t.Errorf("%s: incorrect fields: got %s want %s", c.desc, data.row.fields, c.wantFields)
+			if data.Row.fields != c.wantFields {
+				t.Errorf("%s: incorrect fields: got %s want %s", c.desc, data.Row.fields, c.wantFields)
 			}
-			if data.row.tags != c.wantTags {
-				t.Errorf("%s: incorrect tags: got %s want %s", c.desc, data.row.tags, c.wantTags)
+			if data.Row.tags != c.wantTags {
+				t.Errorf("%s: incorrect tags: got %s want %s", c.desc, data.Row.tags, c.wantTags)
 			}
 		}
 	}
@@ -126,7 +126,7 @@ func TestNextItem(t *testing.T) {
 func TestDecodeEOF(t *testing.T) {
 	input := []byte("tags,tag1text,tag2text\ncpu,140,0.0,0.0\n")
 	br := bufio.NewReader(bytes.NewReader([]byte(input)))
-	dataSource := &fileDataSource{scanner: bufio.NewScanner(br)}
+	dataSource := &FileDataSource{Scanner: bufio.NewScanner(br)}
 	_ = dataSource.NextItem()
 	// nothing left, should be EOF
 	p := dataSource.NextItem()
@@ -191,7 +191,7 @@ func TestHeaders(t *testing.T) {
 
 	for _, c := range cases {
 		br := bufio.NewReader(bytes.NewReader([]byte(c.input)))
-		dataSource := &fileDataSource{bufio.NewScanner(br), nil}
+		dataSource := &FileDataSource{bufio.NewScanner(br), nil}
 		if c.shouldFatal {
 			isCalled := false
 			fatal = func(fmt string, args ...interface{}) {

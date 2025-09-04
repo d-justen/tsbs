@@ -9,32 +9,32 @@ import (
 )
 
 // scan.PointDecoder interface implementation
-type fileDataSource struct {
-	scanner *bufio.Scanner
+type FileDataSource struct {
+	Scanner *bufio.Scanner
 	//cached headers (should be read only at start of file)
 	headers *common.GeneratedDataHeaders
 }
 
 // scan.PointDecoder interface implementation
-func (d *fileDataSource) NextItem() data.LoadedPoint {
+func (d *FileDataSource) NextItem() data.LoadedPoint {
 	// Data Point Example
 	// tags,hostname=host_0,region=eu-west-1,datacenter=eu-west-1b,rack=67,os=Ubuntu16.10,arch=x86,team=NYC,service=7,service_version=0,service_environment=production
 	// cpu,1451606400000000000,58,2,24,61,22,63,6,44,80,38
 
-	newPoint := &insertData{}
-	ok := d.scanner.Scan()
-	if !ok && d.scanner.Err() == nil {
+	newPoint := &InsertData{}
+	ok := d.Scanner.Scan()
+	if !ok && d.Scanner.Err() == nil {
 		// nothing scanned & no error = EOF
 		return data.LoadedPoint{}
 	} else if !ok {
-		fatal("scan error: %v", d.scanner.Err())
+		fatal("scan error: %v", d.Scanner.Err())
 		return data.LoadedPoint{}
 	}
 
 	// The first line is a CSV line of tags with the first element being "tags"
 	// Ex.:
 	// tags,hostname=host_0,region=eu-west-1,datacenter=eu-west-1b,rack=67,os=Ubuntu16.10,arch=x86,team=NYC,service=7,service_version=0,service_environment=production
-	parts := strings.SplitN(d.scanner.Text(), ",", 2) // prefix & then rest of line
+	parts := strings.SplitN(d.Scanner.Text(), ",", 2) // prefix & then rest of line
 	prefix := parts[0]
 	if prefix != tagsPrefix {
 		fatal("data file in invalid format; got %s expected %s", prefix, tagsPrefix)
@@ -44,22 +44,22 @@ func (d *fileDataSource) NextItem() data.LoadedPoint {
 
 	// Scan again to get the data line
 	// cpu,1451606400000000000,58,2,24,61,22,63,6,44,80,38
-	ok = d.scanner.Scan()
+	ok = d.Scanner.Scan()
 	if !ok {
-		fatal("scan error: %v", d.scanner.Err())
+		fatal("scan error: %v", d.Scanner.Err())
 		return data.LoadedPoint{}
 	}
-	parts = strings.SplitN(d.scanner.Text(), ",", 2) // prefix & then rest of line
+	parts = strings.SplitN(d.Scanner.Text(), ",", 2) // prefix & then rest of line
 	prefix = parts[0]
 	newPoint.fields = parts[1]
 
-	return data.NewLoadedPoint(&point{
-		table: prefix,
-		row:   newPoint,
+	return data.NewLoadedPoint(&Point{
+		Table: prefix,
+		Row:   newPoint,
 	})
 }
 
-func (d *fileDataSource) Headers() *common.GeneratedDataHeaders {
+func (d *FileDataSource) Headers() *common.GeneratedDataHeaders {
 	if d.headers != nil {
 		return d.headers
 	}
@@ -80,21 +80,21 @@ func (d *fileDataSource) Headers() *common.GeneratedDataHeaders {
 	i := 0
 	for {
 		var line string
-		ok := d.scanner.Scan()
-		if !ok && d.scanner.Err() == nil { // nothing scanned & no error = EOF
+		ok := d.Scanner.Scan()
+		if !ok && d.Scanner.Err() == nil { // nothing scanned & no error = EOF
 			fatal("reached EOF, but not enough things scanned")
 			return nil
 		} else if !ok {
-			fatal("scan error: %v", d.scanner.Err())
+			fatal("scan error: %v", d.Scanner.Err())
 			return nil
 		}
 		if i == 0 {
 			// read first line - list of tags
-			tags = d.scanner.Text()
+			tags = d.Scanner.Text()
 			tags = strings.TrimSpace(tags)
 		} else {
 			// read the second and further lines - metrics descriptions
-			line = d.scanner.Text()
+			line = d.Scanner.Text()
 			line = strings.TrimSpace(line)
 			if len(line) == 0 {
 				// empty line - end of header

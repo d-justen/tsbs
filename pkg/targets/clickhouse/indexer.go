@@ -14,8 +14,8 @@ type hostnameIndexer struct {
 
 // scan.PointIndexer interface implementation
 func (i *hostnameIndexer) GetIndex(item data.LoadedPoint) uint {
-	p := item.Data.(*point)
-	hostname := strings.SplitN(p.row.tags, ",", 2)[0]
+	p := item.Data.(*Point)
+	hostname := strings.SplitN(p.Row.tags, ",", 2)[0]
 	h := fnv.New32a()
 	h.Write([]byte(hostname))
 	return uint(h.Sum32()) % i.partitions

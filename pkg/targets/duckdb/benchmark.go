@@ -7,7 +7,6 @@ import (
 	"github.com/timescale/tsbs/load"
 	"github.com/timescale/tsbs/pkg/data"
 	"github.com/timescale/tsbs/pkg/targets"
-	"github.com/timescale/tsbs/pkg/targets/clickhouse"
 )
 
 type DuckDBConfig struct {

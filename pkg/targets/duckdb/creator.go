@@ -3,7 +3,6 @@ package duckdb
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"strings"
 	"time"
@@ -20,28 +19,17 @@ const (
 var tableCols = make(map[string][]string)
 
 type dbCreator struct {
-	connector *duckdb.Connector
-	conn      driver.Conn
-	ds        targets.DataSource
+	ds targets.DataSource
 }
 
 func (d *dbCreator) Init() {
-	connector, err := duckdb.NewConnector("tsbs.duckdb", nil)
-	if err != nil {
-		panic(err)
-	}
-	d.connector = connector
-
-	d.conn, err = d.connector.Connect(context.Background())
-	if err != nil {
-		panic(err)
-	}
 	d.ds.Headers()
 }
 
 func (d *dbCreator) DBExists(dbName string) bool {
-	db := sql.OpenDB(d.connector)
-
+	connector, err := duckdb.NewConnector("tsbs.duckdb", nil)
+	db := sql.OpenDB(connector)
+	defer db.Close()
 	rows, err := db.QueryContext(context.Background(), "SHOW TABLES")
 	if err != nil {
 		panic(err)
@@ -56,8 +44,9 @@ func (d *dbCreator) DBExists(dbName string) bool {
 }
 
 func (d *dbCreator) RemoveOldDB(dbName string) error {
-	db := sql.OpenDB(d.connector)
-
+	connector, err := duckdb.NewConnector("tsbs.duckdb", nil)
+	db := sql.OpenDB(connector)
+	defer db.Close()
 	rows, err := db.QueryContext(context.Background(), "SHOW TABLES")
 	if err != nil {
 		return err
@@ -83,15 +72,16 @@ func (d *dbCreator) CreateDB(dbName string) error {
 }
 
 func (d *dbCreator) PostCreateDB(dbName string) error {
-	db := sql.OpenDB(d.connector)
+	connector, err := duckdb.NewConnector("tsbs.duckdb", nil)
+	db := sql.OpenDB(connector)
 	defer db.Close()
-	defer d.conn.Close()
+
 	headers := d.ds.Headers()
 
 	tagNames := headers.TagKeys
 	tagTypes := headers.TagTypes
 	// Create tags table
-	_, err := db.ExecContext(context.Background(), "DROP TABLE IF EXISTS tags")
+	_, err = db.ExecContext(context.Background(), "DROP TABLE IF EXISTS tags")
 	if err != nil {
 		return err
 	}
@@ -135,6 +125,7 @@ func (d *dbCreator) PostCreateDB(dbName string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 

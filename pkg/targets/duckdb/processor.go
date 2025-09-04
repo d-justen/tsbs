@@ -3,17 +3,36 @@ package duckdb
 import (
 	"context"
 	"database/sql/driver"
+	"sync"
 
 	"github.com/marcboeker/go-duckdb/v2"
 	"github.com/timescale/tsbs/pkg/targets"
 	"github.com/timescale/tsbs/pkg/targets/clickhouse"
 )
 
+type syncCSI struct {
+	m     map[string]int64
+	mutex *sync.RWMutex
+}
+
+type insertData struct {
+	tags   string
+	fields string
+}
+
+func newSyncCSI() *syncCSI {
+	return &syncCSI{
+		m:     make(map[string]int64),
+		mutex: &sync.RWMutex{},
+	}
+}
+
 // load.Processor interface implementation
 type processor struct {
 	connector *duckdb.Connector
 	conn      driver.Conn
 	conf      DuckDBConfig
+	_csi      *snycCSI
 }
 
 // load.Processor interface implementation

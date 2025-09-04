@@ -24,7 +24,7 @@ type ClickhouseConfig struct {
 }
 
 // String values of tags and fields to insert - string representation
-type InsertData struct {
+type insertData struct {
 	tags   string // hostname=host_0,region=eu-west-1,datacenter=eu-west-1b,rack=67,os=Ubuntu16.10,arch=x86,team=NYC,service=7,service_version=0,service_environment=production
 	fields string // 1451606400000000000,58,2,24,61,22,63,6,44,80,38
 }
@@ -53,14 +53,14 @@ func getConnectString(conf *ClickhouseConfig, db bool) string {
 // Ex.:
 // tags,hostname=host_0,region=eu-west-1,datacenter=eu-west-1b,rack=67,os=Ubuntu16.10,arch=x86,team=NYC,service=7,service_version=0,service_environment=production
 // cpu,1451606400000000000,58,2,24,61,22,63,6,44,80,38
-type Point struct {
-	Table string
-	Row   *InsertData
+type point struct {
+	table string
+	row   *insertData
 }
 
 // scan.Batch interface implementation
 type tableArr struct {
-	m   map[string][]*InsertData
+	m   map[string][]*insertData
 	cnt uint
 }
 
@@ -71,9 +71,9 @@ func (ta *tableArr) Len() uint {
 
 // scan.Batch interface implementation
 func (ta *tableArr) Append(item data.LoadedPoint) {
-	that := item.Data.(*Point)
-	k := that.Table
-	ta.m[k] = append(ta.m[k], that.Row)
+	that := item.Data.(*point)
+	k := that.table
+	ta.m[k] = append(ta.m[k], that.row)
 	ta.cnt++
 }
 
@@ -83,7 +83,7 @@ type factory struct{}
 // scan.BatchFactory interface implementation
 func (f *factory) New() targets.Batch {
 	return &tableArr{
-		m:   map[string][]*InsertData{},
+		m:   map[string][]*insertData{},
 		cnt: 0,
 	}
 }
@@ -92,8 +92,8 @@ const tagsPrefix = "tags"
 
 func NewBenchmark(file string, hashWorkers bool, conf *ClickhouseConfig) targets.Benchmark {
 	return &benchmark{
-		ds: &FileDataSource{
-			Scanner: bufio.NewScanner(load.GetBufferedReader(file)),
+		ds: &fileDataSource{
+			scanner: bufio.NewScanner(load.GetBufferedReader(file)),
 		},
 		hashWorkers: hashWorkers,
 		conf:        conf,

@@ -95,7 +95,7 @@ func TestNextItem(t *testing.T) {
 	}
 	for _, c := range cases {
 		br := bufio.NewReader(bytes.NewReader([]byte(c.input)))
-		dataSource := &FileDataSource{Scanner: bufio.NewScanner(br)}
+		dataSource := &fileDataSource{scanner: bufio.NewScanner(br)}
 		if c.shouldFatal {
 			fmt.Println(c.desc)
 			isCalled := false
@@ -126,7 +126,7 @@ func TestNextItem(t *testing.T) {
 func TestDecodeEOF(t *testing.T) {
 	input := []byte("tags,tag1text,tag2text\ncpu,140,0.0,0.0\n")
 	br := bufio.NewReader(bytes.NewReader([]byte(input)))
-	dataSource := &FileDataSource{Scanner: bufio.NewScanner(br)}
+	dataSource := &fileDataSource{scanner: bufio.NewScanner(br)}
 	_ = dataSource.NextItem()
 	// nothing left, should be EOF
 	p := dataSource.NextItem()
@@ -191,7 +191,7 @@ func TestHeaders(t *testing.T) {
 
 	for _, c := range cases {
 		br := bufio.NewReader(bytes.NewReader([]byte(c.input)))
-		dataSource := &FileDataSource{bufio.NewScanner(br), nil}
+		dataSource := &fileDataSource{bufio.NewScanner(br), nil}
 		if c.shouldFatal {
 			isCalled := false
 			fatal = func(fmt string, args ...interface{}) {

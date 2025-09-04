@@ -2,13 +2,12 @@ package clickhouse
 
 import (
 	"fmt"
+	"github.com/jmoiron/sqlx"
+	"github.com/timescale/tsbs/pkg/targets"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/jmoiron/sqlx"
-	"github.com/timescale/tsbs/pkg/targets"
 )
 
 // load.Processor interface implementation
@@ -159,7 +158,7 @@ func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
 			timeUTC,    // created_at
 			TimeUTCStr, // time
 			nil,        // tags_id
-			json)       // additional_tags
+			json) // additional_tags
 
 		if p.conf.InTableTag {
 			r = append(r, tags[0]) // tags[0] = hostname

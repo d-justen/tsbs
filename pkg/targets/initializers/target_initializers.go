@@ -2,12 +2,15 @@ package initializers
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/timescale/tsbs/pkg/targets"
 	"github.com/timescale/tsbs/pkg/targets/akumuli"
 	"github.com/timescale/tsbs/pkg/targets/cassandra"
 	"github.com/timescale/tsbs/pkg/targets/clickhouse"
 	"github.com/timescale/tsbs/pkg/targets/constants"
 	"github.com/timescale/tsbs/pkg/targets/crate"
+	"github.com/timescale/tsbs/pkg/targets/duckdb"
 	"github.com/timescale/tsbs/pkg/targets/influx"
 	"github.com/timescale/tsbs/pkg/targets/mongo"
 	"github.com/timescale/tsbs/pkg/targets/prometheus"
@@ -16,7 +19,6 @@ import (
 	"github.com/timescale/tsbs/pkg/targets/timescaledb"
 	"github.com/timescale/tsbs/pkg/targets/timestream"
 	"github.com/timescale/tsbs/pkg/targets/victoriametrics"
-	"strings"
 )
 
 func GetTarget(format string) targets.ImplementedTarget {
@@ -31,6 +33,8 @@ func GetTarget(format string) targets.ImplementedTarget {
 		return clickhouse.NewTarget()
 	case constants.FormatCrateDB:
 		return crate.NewTarget()
+	case constants.FormatDuckDB:
+		return duckdb.NewTarget()
 	case constants.FormatInflux:
 		return influx.NewTarget()
 	case constants.FormatMongo:

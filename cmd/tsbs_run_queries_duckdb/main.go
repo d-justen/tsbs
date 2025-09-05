@@ -6,17 +6,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/blagojts/viper"
 	"github.com/marcboeker/go-duckdb/v2"
+	"github.com/spf13/pflag"
+	"github.com/timescale/tsbs/internal/utils"
 	"github.com/timescale/tsbs/pkg/query"
 )
 
 // Program option vars:
 var (
-	chConnect string
-	hostsList []string
-	user      string
-	password  string
-
 	showExplain bool
 )
 
@@ -28,30 +26,47 @@ var (
 // Parse args:
 func init() {
 	var config query.BenchmarkRunnerConfig
+	config.AddToFlagSet(pflag.CommandLine)
+	pflag.Bool("show-explain", false, "Print out the EXPLAIN output for sample query")
+	pflag.Parse()
+
+	err := utils.SetupConfigFile()
+
+	if err != nil {
+		panic(fmt.Errorf("fatal error config file: %s", err))
+	}
+
+	if err := viper.Unmarshal(&config); err != nil {
+		panic(fmt.Errorf("unable to decode config: %s", err))
+	}
+
+	showExplain = viper.GetBool("show-explain")
+
 	runner = query.NewBenchmarkRunner(config)
 	runner.Workers = 1
+
+	if showExplain {
+		runner.SetLimit(1)
+	}
 }
 
 func main() {
 	runner.Run(&query.DuckDBPool, newProcessor)
 }
 
-// prettyPrintResponse prints a Query and its response in JSON format with two
-// keys: 'query' which has a value of the SQL used to generate the second key
-// 'results' which is an array of each row in the return set.
 func prettyPrintResponse(rows *sql.Rows, q *query.DuckDB) {
 	resp := make(map[string]interface{})
 	resp["query"] = string(q.SqlQuery)
 
-	results := []map[string]interface{}{}
+	var results []*interface{}
 	for rows.Next() {
-		r := make(map[string]interface{})
+		var r *interface{}
 		if err := rows.Scan(r); err != nil {
 			panic(err)
 		}
 		results = append(results, r)
-		resp["results"] = results
 	}
+	resp["results"] = results
 
 	line, err := json.MarshalIndent(resp, "", "  ")
 	if err != nil {
@@ -86,7 +101,7 @@ func (p *processor) Init(workerNumber int) {
 	}
 	p.db = sql.OpenDB(connector)
 	p.opts = &queryExecutorOptions{
-		showExplain:   false,
+		showExplain:   showExplain,
 		debug:         runner.DebugLevel() > 0,
 		printResponse: runner.DoPrintResponses(),
 	}

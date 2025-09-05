@@ -5,6 +5,7 @@ import (
 	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/databases/cassandra"
 	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/databases/clickhouse"
 	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/databases/cratedb"
+	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/databases/duckdb"
 	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/databases/influx"
 	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/databases/mongo"
 	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/databases/questdb"
@@ -39,5 +40,11 @@ func InitQueryFactories(config *config.QueryGeneratorConfig) map[string]interfac
 		DBName: config.DbName,
 	}
 	factories[constants.FormatQuestDB] = &questdb.BaseGenerator{}
+	factories[constants.FormatDuckDB] = &duckdb.BaseGenerator{
+		// UseTags: config.TimescaleUseTags,
+		// UseTimeBucket: config.TimescaleUseTimeBucket,
+		UseTags:       true,
+		UseTimeBucket: true,
+	}
 	return factories
 }

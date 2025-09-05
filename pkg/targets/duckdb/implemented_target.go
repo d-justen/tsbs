@@ -18,7 +18,7 @@ type duckdbTarget struct {
 }
 
 func (t *duckdbTarget) TargetName() string {
-	return constants.FormatTimescaleDB
+	return constants.FormatDuckDB
 }
 
 func (t *duckdbTarget) Serializer() serialize.PointSerializer {

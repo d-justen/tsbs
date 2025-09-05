@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+
 	"github.com/blagojts/viper"
 	"github.com/timescale/tsbs/load"
 	"github.com/timescale/tsbs/pkg/data/source"
@@ -46,6 +47,11 @@ func parseConfig(target targets.ImplementedTarget, v *viper.Viper) (targets.Benc
 	benchmark, err := target.Benchmark(loaderConfigInternal.DBName, dataSourceInternal, dbSpecificViper)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	configurableBenchmark, ok := benchmark.(targets.ConfigurableBenchmark)
+	if ok {
+		configurableBenchmark.SetConfig(loaderConfigInternal.BatchSize, loaderConfig.Workers)
 	}
 
 	return benchmark, load.GetBenchmarkRunner(*loaderConfigInternal), nil

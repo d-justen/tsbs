@@ -12,6 +12,7 @@ import (
 	"github.com/timescale/tsbs/pkg/targets/crate"
 	"github.com/timescale/tsbs/pkg/targets/duckdb"
 	"github.com/timescale/tsbs/pkg/targets/influx"
+	"github.com/timescale/tsbs/pkg/targets/influx3"
 	"github.com/timescale/tsbs/pkg/targets/mongo"
 	"github.com/timescale/tsbs/pkg/targets/prometheus"
 	"github.com/timescale/tsbs/pkg/targets/questdb"
@@ -37,6 +38,8 @@ func GetTarget(format string) targets.ImplementedTarget {
 		return duckdb.NewTarget()
 	case constants.FormatInflux:
 		return influx.NewTarget()
+	case constants.FormatInflux3:
+		return influx3.NewTarget()
 	case constants.FormatMongo:
 		return mongo.NewTarget()
 	case constants.FormatPrometheus:

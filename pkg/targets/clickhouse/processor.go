@@ -159,7 +159,7 @@ func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
 			timeUTC,    // created_at
 			TimeUTCStr, // time
 			nil,        // tags_id
-			json)       // additional_tags
+			json) // additional_tags
 
 		if p.conf.InTableTag {
 			r = append(r, tags[0]) // tags[0] = hostname
@@ -184,12 +184,16 @@ func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
 	// New tags in this batch, need to be inserted
 	newTags := make([][]string, 0, len(rows))
 	p.csi.mutex.RLock()
+	seen := make(map[string]bool)
 	for _, tagRow := range tagRows {
 		// tagRow contains what was called `tags` earlier - see one screen higher
 		// tagRow[0] = hostname
 		if _, ok := p.csi.m[tagRow[0]]; !ok {
 			// Tags of this hostname are not listed as inserted - new tags line, add it for creation
-			newTags = append(newTags, tagRow)
+			if !seen[tagRow[0]] {
+				newTags = append(newTags, tagRow)
+				seen[tagRow[0]] = true
+			}
 		}
 	}
 	p.csi.mutex.RUnlock()

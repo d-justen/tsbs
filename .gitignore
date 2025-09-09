@@ -6,6 +6,8 @@
 *~
 
 bin
+venv
+benchmark_results
 
 # High Dynamic Range (HDR) Histogram files
 *.hdr

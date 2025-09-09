@@ -43,7 +43,7 @@ func init() {
 	showExplain = viper.GetBool("show-explain")
 
 	runner = query.NewBenchmarkRunner(config)
-	runner.Workers = 1
+	// runner.Workers = 1
 
 	if showExplain {
 		runner.SetLimit(1)
